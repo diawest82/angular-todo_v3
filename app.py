@@ -17,6 +17,7 @@ def my_todos():
     return render_template('index.html')
 
 
+@app.route('/api/v1/users/token', methods=['GET'])
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()

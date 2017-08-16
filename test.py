@@ -38,8 +38,6 @@ class ViewModelTestCase(unittest.TestCase):
         return User.create_user(**USER_DATA)
 
 
-
-
 class TodoResourceTestCase(ViewModelTestCase):
 
     def test_get_todos(self):
@@ -57,16 +55,13 @@ class TodoResourceTestCase(ViewModelTestCase):
             self.assertEqual(rv.status_code, 200)
             self.assertIn('Study', rv.get_data(as_text=True))
 
-    def test_post_todo(self):
-        with test_database(TEST_DB, (Todo,)):
-            rv = self.app.post('api/v1/todos', data={'name': 'Todo'})
-            self.assertEqual(rv.status_code, 201)
-            self.assertIn('Todo', rv.get_data(as_text=True))
-
     def test_update_todo(self):
         with test_database(TEST_DB, (Todo,)):
+            user = User.get(User.id == 1)
+            token = user.generate_auth_token().decode('ascii')
+            headers = {'Authorization': 'Token {}'.format(token)}
             self.create_todos()
-            rv = self.app.put('api/v1/todos/1', data={'name': 'Todo Updated'})
+            rv = self.app.put('api/v1/todos/1', data={'name': 'Todo Updated'}, headers=headers)
             self.assertEqual(rv.status_code, 200)
             self.assertIn('Todo Updated', rv.get_data(as_text=True))
 
@@ -74,22 +69,21 @@ class TodoResourceTestCase(ViewModelTestCase):
         with test_database(TEST_DB, (Todo,)):
             user = User.get(User.id == 1)
             token = user.generate_auth_token().decode('ascii')
-            headers = {'Authorization': 'Token'.format(token)}
+            headers = {'Authorization': 'Token {}'.format(token)}
             self.create_todos()
             resp = self.app.delete('api/v1/todos/2', headers=headers)
-            #resp_data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 204)
             self.assertNotIn('Study', resp.get_data(as_text=True))
 
-    def test_authorized_add_todo(self):
+    def test_add_todo(self):
         with test_database(TEST_DB, (Todo,)):
-            user = User.get(User.id==1)
+            user = User.get(User.id == 1)
             token = user.generate_auth_token().decode('ascii')
-            headers = {'Authorization': 'Token'.format(token)}
+            headers = {'Authorization': 'Token {}'.format(token)}
             resp = self.app.post('api/v1/todos', data={'name': 'Wash car'}, headers=headers)
             resp_data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 201)
-            self.assertIn( 'Wash car', resp_data['name'])
+            self.assertIn('Wash car', resp_data['name'])
 
 
 class UserModelTestCase(unittest.TestCase):
