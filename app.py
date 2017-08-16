@@ -13,7 +13,6 @@ app.register_blueprint(users_api, url_prefix='/api/v1')
 
 @app.route('/')
 def my_todos():
-    #todos = models.Todo.select()
     return render_template('index.html')
 
 
